@@ -1,0 +1,45 @@
+<div class="todo-content">
+  <h1 class="page-title">Todo List</h1>
+  <div class="todo-create">
+    <form (ngSubmit)="createTask()" novalidate>
+      <input type="text" id="title" class="form-control"
+             required
+             name="title" [(ngModel)]="newTask.title">
+    </form>
+  </div>
+  <ul class="todo-list">
+    <li *ngFor="let task of tasks" [class.completed]="task.completed === true">
+      <div class="todo-row" *ngIf="!editing || editingTask.id != task.id">
+        <a class="todo-completed" (click)="toggleCompleted(task)">
+          <i class="material-icons toggle-completed-checkbox"></i>
+        </a>
+        <span class="todo-title">
+              {{task.title}}
+        </span>
+        <span class="todo-actions">
+                <a (click)="editTask(task)">
+                  <i class="material-icons edit">edit</i>
+                </a>
+                <a (click)="deleteTask(task.id)">
+                  <i class="material-icons delete">clear</i>
+                </a>
+            </span>
+      </div>
+      <div class="todo-edit" *ngIf="editing && editingTask.id === task.id">
+        <input class="form-control" type="text"
+               [(ngModel)]="editingTask.title" required>
+        <span class="edit-actions">
+                <a (click)="updateTask(editingTask)">
+                  <i class="material-icons">done</i>
+                </a>
+                <a (click)="clearEditing()">
+                  <i class="material-icons">clear</i>
+                </a>
+            </span>
+      </div>
+    </li>
+  </ul>
+  <div class="no-todos" *ngIf="tasks.length == 0">
+    <p>No Tasks Found!</p>
+  </div>
+</div>

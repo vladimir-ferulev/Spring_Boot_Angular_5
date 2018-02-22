@@ -1,0 +1,133 @@
+* {
+  box-sizing: border-box;
+}
+
+h1 {
+  font-size: 36px;
+}
+
+i {
+  vertical-align: middle;
+}
+
+.page-title {
+  text-align: center;
+}
+
+.todo-content {
+  max-width: 700px;
+  margin: auto;
+  margin-top: 40px;
+  background-color: rgba(149, 190, 211, 0.55);
+  padding: 20px;
+  border: solid 4px rgba(117, 147, 167, 0.63);
+}
+
+.form-control {
+  font-size: 16px;
+  padding-left: 15px;
+  border: 1px solid #7593a7;
+}
+
+
+.todo-content .form-control {
+  width: 100%;
+  height: 40px;
+}
+
+.todo-content .todo-create {
+   padding-bottom: 30px;
+ }
+
+
+.todo-content ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 450px;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-left: -15px;
+  margin-right: -15px;
+  overflow-y: scroll;
+}
+
+.todo-content ul li {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 22px;
+}
+
+.todo-content ul li span {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 21px;
+}
+
+.todo-content .todo-title {
+  width: calc(100% - 160px);
+  margin-left: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.todo-content .todo-completed {
+  display: inline-block;
+  text-align: center;
+  width:35px;
+  height:35px;
+  cursor: pointer;
+}
+
+.todo-content .todo-completed i {
+  font-size: 22px;
+}
+
+.todo-content .todo-actions, .todo-content .edit-actions {
+  float: right;
+}
+
+.todo-content .todo-actions i, .todo-content .edit-actions i {
+  font-size: 22px;
+}
+
+.todo-content .todo-actions a, .todo-content .edit-actions a {
+  display: inline-block;
+  text-align: center;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+}
+
+.todo-content .todo-actions a:hover, .todo-content .edit-actions a:hover {
+  background-color: #f4f4f4;
+}
+
+.todo-content .todo-edit input {
+  width: calc(100% - 80px);
+  height: 35px;
+}
+.todo-content .edit-actions {
+  text-align: right;
+}
+
+.no-todos {
+  text-align: center;
+}
+
+.toggle-completed-checkbox:before {
+  content: 'check_box_outline_blank';
+}
+
+li.completed .toggle-completed-checkbox:before {
+  content: 'check_box';
+}
+
+li.completed .todo-title {
+  text-decoration: line-through;
+  color: #757575;
+}
+
+li.completed i {
+  color: #757575;
+}
