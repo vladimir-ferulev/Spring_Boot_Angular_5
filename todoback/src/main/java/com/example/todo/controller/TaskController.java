@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -24,36 +24,33 @@ public class TaskController {
     }
 
     @PostMapping("/tasks")
-    public Task createTask(@Valid @RequestBody Task task) {
+    public Task createTask(@RequestBody Task task) {
         task.setCompleted(false);
         return taskRepository.save(task);
     }
 
     @GetMapping(value = "/tasks/{id}")
     public ResponseEntity<Task> getTaskById(@PathVariable("id") Long id) {
-        Task task = taskRepository.findOne(id);
-        if (task == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity<>(task, HttpStatus.OK);
-        }
+        Optional<Task> optional = taskRepository.findById(id);
+        return optional.map(task -> new ResponseEntity<>(task, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PutMapping(value = "/tasks/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable("id") Long id,
-                                           @Valid @RequestBody Task task) {
-        Task taskRep = taskRepository.findOne(id);
-        if(taskRep == null) {
+                                           @RequestBody Task task) {
+        Optional<Task> optional = taskRepository.findById(id);
+        if(!optional.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        taskRep.setTitle(task.getTitle());
-        taskRep.setCompleted(task.getCompleted());
-        Task taskUpdated = taskRepository.save(taskRep);
+        Task origTask = optional.get();
+        origTask.setTitle(task.getTitle());
+        origTask.setCompleted(task.getCompleted());
+        Task taskUpdated = taskRepository.save(origTask);
         return new ResponseEntity<>(taskUpdated, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/tasks/{id}")
     public void deleteTask(@PathVariable("id") Long id) {
-        taskRepository.delete(id);
+        taskRepository.deleteById(id);
     }
 }
