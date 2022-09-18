@@ -1,49 +1,56 @@
 package com.example.todo.security;
 
-import com.example.todo.service.UserDetailServiceImpl;
+import com.example.todo.repository.UserRepository;
+import com.example.todo.service.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtTokenFilter jwtTokenFilter;
+
+    @Autowired
+    public SecurityConfig(JwtTokenFilter jwtTokenFilter) {
+        this.jwtTokenFilter = jwtTokenFilter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf().disable()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .authorizeRequests()
+                .antMatchers("/auth/login").permitAll()
                 .antMatchers("/**").authenticated()
                 .and()
-                .formLogin()
-                .loginPage("/auth/login").permitAll()
-                .and()
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService,
-                                                               PasswordEncoder passwordEncoder) {
+    public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsServiceImpl userDetailsService) {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+        daoAuthenticationProvider.setPasswordEncoder(new BCryptPasswordEncoder(12));
         return daoAuthenticationProvider;
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return new UserDetailServiceImpl();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+    public UserDetailsService userDetailsService(UserRepository repository) {
+        return new UserDetailsServiceImpl(repository);
     }
 }
