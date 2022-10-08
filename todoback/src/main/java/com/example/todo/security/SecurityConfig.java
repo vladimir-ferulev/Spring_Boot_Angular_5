@@ -1,49 +1,47 @@
 package com.example.todo.security;
 
-import com.example.todo.service.UserDetailServiceImpl;
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
+import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpStatus;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/**").authenticated()
-                .and()
-                .formLogin()
-                .loginPage("/auth/login").permitAll()
-                .and()
-                .build();
+    public Realm realm(DataSource dataSource) {
+        JdbcRealm jdbcRealm = new JdbcRealm();
+        jdbcRealm.setDataSource(dataSource);
+        return jdbcRealm;
     }
 
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService,
-                                                               PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-        return daoAuthenticationProvider;
+    public ShiroFilterChainDefinition shiroFilterChainDefinition() {
+        DefaultShiroFilterChainDefinition chainDefinition = new DefaultShiroFilterChainDefinition();
+        chainDefinition.addPathDefinition("/**", "authc"); // необходима аутентификация для всех страниц
+        chainDefinition.addPathDefinition("/auth/logout", "logout");  // настройка пути для логаута
+        return chainDefinition;
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return new UserDetailServiceImpl();
-    }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+    @ExceptionHandler(AuthorizationException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleException(AuthorizationException e, Model model) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("status", HttpStatus.FORBIDDEN.value());
+        map.put("message", "No message available");
+        model.addAttribute("errors", map);
+        return "error";
     }
 }
