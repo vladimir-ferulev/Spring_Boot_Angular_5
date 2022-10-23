@@ -41,7 +41,7 @@ public class JwtTokenFilter extends GenericFilterBean {
             }
 
             if (jwtTokenProvider.isAccessTokenExpired(accessToken)) {
-                jwtTokenProvider.saveLastUrlBeforeRefreshToken(((HttpServletRequest) request).getServletPath());
+                jwtTokenProvider.setLastUrl(((HttpServletRequest) request).getServletPath());
                 ((HttpServletResponse) response).sendRedirect(REFRESH_PATH);
                 return;
             } else {
@@ -49,10 +49,10 @@ public class JwtTokenFilter extends GenericFilterBean {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (JwtAuthenticationException e) {
-            ((HttpServletResponse) response).sendError(e.getHttpStatus().value());
-            throw new JwtAuthenticationException("JWT token invalid");
+            ((HttpServletResponse) response).sendRedirect(LOGIN_PATH);
+            return;
         }
-        jwtTokenProvider.lastUrlBeforeRefresh = null;
+        jwtTokenProvider.setLastUrl(null);
         filterChain.doFilter(request, response);
     }
 

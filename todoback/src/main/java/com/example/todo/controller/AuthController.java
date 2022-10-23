@@ -90,7 +90,7 @@ public class AuthController {
         response.addCookie(createTokenCookie(COOKIE_ACCESS_TOKEN, newAccessToken, "/"));
         response.addCookie(createTokenCookie(COOKIE_REFRESH_TOKEN, newRefreshToken, "/auth"));
 
-        RedirectView view = new RedirectView(jwtTokenProvider.lastUrlBeforeRefresh != null ? jwtTokenProvider.lastUrlBeforeRefresh : "/");
+        RedirectView view = new RedirectView(jwtTokenProvider.getLastUrl() != null ? jwtTokenProvider.getLastUrl() : "/");
         return new ModelAndView(view);
     }
 

@@ -27,7 +27,7 @@ public class JwtTokenProvider {
 
     private String refreshToken;
     private Date refreshTokenCreateDate;
-    public String lastUrlBeforeRefresh;
+    private String lastUrl;
 
     public static final String COOKIE_ACCESS_TOKEN = "access_token";
     public static final String COOKIE_REFRESH_TOKEN = "refresh_token";
@@ -126,7 +126,11 @@ public class JwtTokenProvider {
         refreshTokenCreateDate = null;
     }
 
-    public void saveLastUrlBeforeRefreshToken(String servletPath) {
-        lastUrlBeforeRefresh = servletPath;
+    public String getLastUrl() {
+        return lastUrl;
+    }
+
+    public void setLastUrl(String lastUrl) {
+        this.lastUrl = lastUrl;
     }
 }

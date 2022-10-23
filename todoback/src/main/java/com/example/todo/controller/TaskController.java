@@ -5,6 +5,7 @@ import com.example.todo.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
@@ -19,6 +20,7 @@ public class TaskController {
     @Autowired
     TaskRepository taskRepository;
 
+    @PreAuthorize("@projectsPermissionEvaluator.userHasProject(authentication.name, 'ITG')")
     @GetMapping("/tasks")
     public Collection<Task> getAllTasks() {
         return taskRepository.findAll();
