@@ -15,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static com.example.todo.controller.AuthController.LOGIN_PATH;
+import static com.example.todo.controller.AuthController.REFRESH_PATH;
+
 
 @Configuration
 @EnableWebSecurity
@@ -39,7 +42,8 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/auth/login").permitAll()
+                .antMatchers(LOGIN_PATH).permitAll()
+                .antMatchers(REFRESH_PATH).permitAll()
                 .antMatchers("/**").authenticated()
                 .and()
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)

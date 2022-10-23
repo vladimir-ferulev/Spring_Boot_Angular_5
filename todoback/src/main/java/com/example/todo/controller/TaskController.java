@@ -5,8 +5,6 @@ import com.example.todo.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
@@ -32,10 +30,7 @@ public class TaskController {
         return taskRepository.save(task);
     }
 
-//  @Secured("ROLE_VIEWER")
-//  @PreAuthorize("hasRole('ROLE_VIEWER')")
-//  @RolesAllowed({ "ROLE_VIEWER", "ROLE_EDITOR" })
-    @PreAuthorize("hasAuthority('VIEW_TASK')")
+    @RolesAllowed({"ROLE_USER"})
     @GetMapping(value = "/tasks/{id}")
     public ResponseEntity<Task> getTaskById(@PathVariable("id") Long id) {
         Optional<Task> optional = taskRepository.findById(id);

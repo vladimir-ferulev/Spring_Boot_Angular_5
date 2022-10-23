@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static com.example.todo.controller.AuthController.LOGIN_PATH;
+import static com.example.todo.controller.AuthController.REFRESH_PATH;
+
 @Component
 public class JwtTokenFilter extends GenericFilterBean {
     private final JwtTokenProvider jwtTokenProvider;
@@ -24,20 +27,38 @@ public class JwtTokenFilter extends GenericFilterBean {
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        String token = jwtTokenProvider.resolveToken((HttpServletRequest) servletRequest);
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        if (isPublicResource(((HttpServletRequest) request).getServletPath())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String accessToken = jwtTokenProvider.retrieveAccessToken((HttpServletRequest) request);
         try {
-            if (token != null && jwtTokenProvider.validateToken(token)) {
-                Authentication authentication = jwtTokenProvider.getAuthentication(token);
-                if (authentication != null) {
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
+            if (accessToken == null) {
+                ((HttpServletResponse) response).sendRedirect(LOGIN_PATH);
+                return;
+            }
+
+            if (jwtTokenProvider.isAccessTokenExpired(accessToken)) {
+                jwtTokenProvider.saveLastUrlBeforeRefreshToken(((HttpServletRequest) request).getServletPath());
+                ((HttpServletResponse) response).sendRedirect(REFRESH_PATH);
+                return;
+            } else {
+                Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (JwtAuthenticationException e) {
-            SecurityContextHolder.clearContext();
-            ((HttpServletResponse) servletResponse).sendError(e.getHttpStatus().value());
-            throw new JwtAuthenticationException("JWT token is expired or invalid");
+            ((HttpServletResponse) response).sendError(e.getHttpStatus().value());
+            throw new JwtAuthenticationException("JWT token invalid");
         }
-        filterChain.doFilter(servletRequest, servletResponse);
+        jwtTokenProvider.lastUrlBeforeRefresh = null;
+        filterChain.doFilter(request, response);
+    }
+
+    private boolean isPublicResource(String servletPath) {
+        return LOGIN_PATH.equals(servletPath)
+                || REFRESH_PATH.equals(servletPath)
+                || "/error".equals(servletPath);
     }
 }
